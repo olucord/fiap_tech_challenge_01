@@ -3,3 +3,9 @@
 # Flask + Vercel
 
 https://fiap-tech-challenge-01-gray.vercel.app
+
+## Executar localmente
+
+```bash
+npm i -g vercel
+vercel dev
