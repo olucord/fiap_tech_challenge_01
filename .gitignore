@@ -1,3 +1,18 @@
+# cache Python
+**/__pycache__/
+*.py[cod]
+*.pyo
+
+# vs code
+.vscode/
+
+# credenciais
+*.env
+.env
+
+# sandbox.py
+# For quick tests and experiments. Not for production.
+sandbox.py
 .vercel
 *.log
 *.pyc

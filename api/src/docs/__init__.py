@@ -1,0 +1,1 @@
+from .swagger import configure_swagger
