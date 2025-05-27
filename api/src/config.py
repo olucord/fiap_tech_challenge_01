@@ -1,16 +1,16 @@
 """
 config.py
 
-Este módulo define as configurações principais da aplicação Flask para diferen-
-tes ambientes (desenvolvimento e produção), além de fornecer a ela um provedor 
-JSON personalizado.
+Este módulo define as configurações da aplicação Flask para diferentes ambientes
+(desenvolvimento e produção), além de lhe fornecer um provedor JSON 
+personalizado.
 
 Classes:
-    - ConfigDev: Configurações específicas para ambiente de desenvolvimento.
-    - ConfigProd: Config urações específicas para ambiente de produção.
-    - CustomJSONProvider: Provedor personalizado de serialização e desseriali-
-    zação JSON no Flask com ajustes para compatibilidade com Unicode e controle 
-    de ordenação de chaves.
+    ConfigDev: Configurações específicas para ambiente de desenvolvimento.
+    ConfigProd: Configurações específicas para ambiente de produção.
+    CustomJSONProvider: Provedor personalizado de serialização e desserialização
+    JSON no Flask com ajustes para compatibilidade com Unicode e controle de 
+    ordenação de chaves.
 """
 
 from flask.json.provider import DefaultJSONProvider
@@ -19,13 +19,14 @@ from typing import Any
 class ConfigDev:
     """
     Configurações de desenvolvimento para a aplicação Flask.
-
-    Atributos:
+    
+    Attrs:
         DEBUG (bool): Ativa o modo de depuração.
         JWT_SECRET_KEY (str): Chave secreta usada para assinatura de tokens JWT.
         JSONIFY_PRETTYPRINT_REGULAR (bool): Ativa a identação na saída JSON.
         SWAGGER (dict): Configurações para a interface Swagger UI.
-        CACHE_TYPE (str): Tipo de cache utilizado ('simple' usa cache em memória).
+        CACHE_TYPE (str): Tipo de cache utilizado ('simple' usa cache em 
+        memória).
     """
     DEBUG = True
     JWT_SECRET_KEY = 'Nem_toda_senha_sera_segura'
@@ -39,8 +40,8 @@ class ConfigDev:
 class ConfigProd:
     """
     Configurações de produção para a aplicação Flask.
-
-    Atributos:
+    
+    Attrs:
         DEBUG (bool): Desativa o modo de depuração em produção.
     """
     DEBUG = False
@@ -52,8 +53,8 @@ class CustomJSONProvider(DefaultJSONProvider):
     Sobrescreve os métodos padrão de serialização e desserialização JSON no 
     Flask para permitir melhor compatibilidade com caracteres especiais e ordem 
     de chaves.
-
-    Métodos:
+    
+    Methods:
         dumps: serializa um objeto Python em uma string JSON.
         loads: desserializa uma string JSON em um objeto Python.
     """
@@ -62,26 +63,32 @@ class CustomJSONProvider(DefaultJSONProvider):
         """
         Serializa um objeto Python em uma string JSON.
 
-        Argumentos:
-            obj: Objeto Python a ser serializado.
-            **kwargs: Parâmetros adicionais para customizar a serialização.
-
+        Definimos os argumentos "ensure_ascii" e "sort_keys" como False, já que
+        por padrão são True. O primeiro permite preservar caracteres unicode 
+        além de apenas ASCII, enquanto o segundo mantém a ordem original das 
+        chaves do dicionário, sem ordená-las.
+        
+        Args:
+            obj (Any): Objeto Python a ser serializado.
+            kwargs: Parâmetros adicionais para customizar a serialização.
+        
         Returns:
             str: Representação JSON do objeto.
         """
         kwargs.setdefault('ensure_ascii', False)
         kwargs.setdefault('sort_keys', False)
+
         return super().dumps(obj, **kwargs)
 
     def loads(self, s, **kwargs) -> Any:
         """
         Desserializa uma string JSON em um objeto Python.
-
-        Argumentos:
+        
+        Args:
             s (str): String JSON a ser convertida.
-            **kwargs: Parâmetros adicionais para customizar a desserialização.
-
+            kwargs: Parâmetros adicionais para customizar a desserialização.
+        
         Returns:
-            Any: Objeto Python resultante da conversão.
+            obj (Any): Objeto Python resultante da conversão.
         """
         return super().loads(s, **kwargs)
