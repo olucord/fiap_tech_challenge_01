@@ -17,9 +17,9 @@ Endpoints:
         Params:
             Query: 
                 option: opção principal da requisição HTTP
-                year: ano da opção principal da requisição HTTP
-                sub_option: sub-opção da opção principal da requisição HTTP, 
-                caso aplicável
+                year: parâmetro de ano para filtrar a requisição
+                sub_option: parâmetro relativo a opção principal
+                
 
         Returns:
             response: objeto JSON com os dados organizados conforme os 
@@ -92,11 +92,17 @@ Functions:
             se a solicitação falhar.
 
 """
-from flask import Blueprint, jsonify, request, Response
+import os
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
-from src.models import QueryParametersModel
+from datetime import datetime
 from pydantic import ValidationError
+from sqlalchemy import create_engine
+from src.models import QueryParametersModel
+from flask import Blueprint, jsonify, request, Response
+
+CONNECTION_STRING = os.environ.get('POSTGRES_URL')
 
 scraping_bp = Blueprint('Scraping', __name__)
 
@@ -304,10 +310,10 @@ def scrape_table_content(parameters_sent) -> Response:
 
         return jsonify({
                 f"[Parâmetros da pesquisa]":
-                f'[opção={parameters_sent['original_option']}, '
-                f'ano={parameters_sent['original_year']}, '
-                f'sub_opção={parameters_sent['original_sub_option']}'
-                ' (None, se não existir)]',
+                f"[opção={parameters_sent['original_option']}, "
+                f"ano={parameters_sent['original_year']}, "
+                f"sub_opção={parameters_sent['original_sub_option']}"
+                " (None, se não existir)]",
                 "":"",
                 f"{table_headers} {table_footers}":
                 data_table
@@ -325,18 +331,39 @@ def scrap_content() -> Response:
       - in: query
         name: option
         type: string
+        enum: ['producao','processamento','comercializacao','importacao','exportacao']
         required: true
-        description: opção principal da requisição HTTP
       - in: query
         name: year
         type: string
         required: false
-        description: ano da opção principal da requisição HTTP
+        description: Digite um ano (Ex. 2000)
       - in: query
         name: sub_option
         type: string
         required: false
-        description: sub-opção da opção principal da requisição HTTP
+        description: 
+            Selecionar referente a opçao principal  \n
+            \n
+            processamento\n
+            --viniferas, \n
+            --americanas_e_hibridas, \n
+            --uvas_de_mesa, \n
+            --sem_classificacao \n
+            \n
+            importacao\n
+            --vinhos_de_mesa, \n
+            --espumantes, \n
+            --uvas_frescas, \n
+            --uvas_passas, \n
+            --suco_de_uva \n
+            \n
+            exportacao\n
+            --vinhos_de_mesa, \n
+            --espumantes, \n
+            --uvas_frescas, \n
+            --suco_de_uva\n
+
     responses:
       200:
         description: Dados raspados e organizados conforme os parâmetros fornecidos.
@@ -432,3 +459,13 @@ def scrap_content_help() -> Response:
     
     except Exception as e:
         return jsonify({"error":str(e)}), 500
+    
+
+def save_to_sql(opcao, tabela_html):
+
+    df = pd.read_html(tabela_html)
+    conn_sql = create_engine(CONNECTION_STRING)
+    df['dt_ref'] = datetime.today().date()
+
+    df.to_sql()
+    
