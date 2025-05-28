@@ -2,7 +2,8 @@
 
 # Flask + Vercel
 
-https://fiap-tech-challenge-01-gray.vercel.app
+https://tech-challenge-01-tariks-projects-66df066e.vercel.app/apidocs/
+
 
 ## Executar localmente
 
