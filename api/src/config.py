@@ -15,6 +15,11 @@ Classes:
 
 from flask.json.provider import DefaultJSONProvider
 from typing import Any
+import os
+
+CONNECTION_STRING = os.environ.get('POSTGRES_URL')
+if CONNECTION_STRING and CONNECTION_STRING.startswith("postgres://"):
+    CONNECTION_STRING = CONNECTION_STRING.replace("postgres://", "postgresql://", 1)
 
 class ConfigDev:
     """
@@ -29,12 +34,13 @@ class ConfigDev:
         memória).
     """
     DEBUG = True
-    JWT_SECRET_KEY = 'Nem_toda_senha_sera_segura'
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     JSONIFY_PRETTYPRINT_REGULAR = True
     SWAGGER = {
     "title":"Embrapa's API",
     "uiversion":3
-}
+    }
+    SQLALCHEMY_DATABASE_URI = CONNECTION_STRING
     CACHE_TYPE = 'simple'
 
 class ConfigProd:
