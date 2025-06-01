@@ -303,19 +303,18 @@ def scrape_table_content(parameters_sent) -> Response:
 
     try:
 
-        # try:
-        #     print(parameters_sent)
-        #     response = requests.get(full_url)
-        #     soup = BeautifulSoup(response.text, 'html.parser')
+        try:
+            response = requests.get(full_url)
+            soup = BeautifulSoup(response.text, 'html.parser')
 
-        #     # elemento de nível 1 - tabela de produtos
-        #     table = soup.find('table', class_='tb_base tb_dados')
+            # elemento de nível 1 - tabela de produtos
+            table = soup.find('table', class_='tb_base tb_dados')
 
-        #     table_headers = get_table_headers(table)
-        #     table_footers = get_table_footers(table)
-        #     data_table = get_data_table(parameters_sent, table)
-        # except Exception as e:
-        table_headers, table_footers, data_table = get_table_sql(parameters_sent)
+            table_headers = get_table_headers(table)
+            table_footers = get_table_footers(table)
+            data_table = get_data_table(parameters_sent, table)
+        except:
+            table_headers, table_footers, data_table = get_table_sql(parameters_sent)
 
         return jsonify({
                 f"[Parâmetros da pesquisa]":
@@ -870,7 +869,6 @@ def get_table_sql(parametros):
             FROM {parametros['original_option']}
             WHERE "Ano" = {parametros['original_year']}
             '''
-            print(query)
             df = pd.read_sql(query, engine)
 
             for idx, row in df.head(df.shape[0]-2).iterrows():
@@ -878,7 +876,6 @@ def get_table_sql(parametros):
                     continue
                 else:
                     dados_finais.append([row['Produto'],row['Quantidade (L.)'],row['Nivel'],row['Categoria']])
-            print(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
             return(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
         
         elif parametros['original_option'] in ['processamento']:
@@ -895,7 +892,6 @@ def get_table_sql(parametros):
             if parametros['original_sub_option']:
                 query += f'''AND {parametros["original_option"]}."Categoria" in ('{parametros["original_sub_option"]}')'''
 
-            print(query)
             df = pd.read_sql(query, engine)
 
             for idx, row in df.head(df.shape[0]-2).iterrows():
@@ -903,7 +899,6 @@ def get_table_sql(parametros):
                     continue
                 else:
                     dados_finais.append([row['Produto'],row['Quantidade (L.)'],row['Nivel'],row['Categoria']])
-            print(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
             return(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
         
         elif parametros['original_option'] in ['importacao', 'exportacao']:
@@ -920,7 +915,6 @@ def get_table_sql(parametros):
             if parametros['original_sub_option']:
                 query += f'''AND {parametros["original_option"]}."Categoria" in ('{parametros["original_sub_option"]}')'''
 
-            print(query)
             df = pd.read_sql(query, engine)
 
             for idx, row in df.head(df.shape[0]-2).iterrows():
@@ -928,7 +922,6 @@ def get_table_sql(parametros):
                     continue
                 else:
                     dados_finais.append([row['Paises'],row['Quantidade (Kg)'],row['Valor (US$)']])
-            print(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
             return(list(df.head(1)), list(df.tail(1).iloc[0]), dados_finais)
         
     except Exception as e:
