@@ -672,34 +672,24 @@ def save_table_sql() -> Response:
     responses:
       200:
         description: Dados salvos no servidor
-        content:
-          application/json:
-            example:
+          example:
               msg: Tabelas salvas com sucesso
       400:
         description: Opção inválida
-        content:
-          application/json:
-            example:
-              error: Mensagem de erro personalizada
+        example:
+            error: Mensagem de erro personalizada
       401:
         description: Token ausente ou inválido
-        content:
-          application/json:
-            example:
-              error: Mensagem de erro personalizada
+        example:
+            error: Mensagem de erro personalizada
       422:
         description: Erro de formato do token
-        content:
-          application/json:
-            example:
-              error: Mensagem de erro personalizada
+        example:
+            error: Mensagem de erro personalizada
       500:
         description: Erro interno no servidor ao tentar salvar
-        content:
-          application/json:
-            example:
-              error: Mensagem de erro personalizada
+        example:
+            error: Mensagem de erro personalizada
     """
     data = request.args.to_dict()
     opcao = data['opcao']

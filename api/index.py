@@ -13,7 +13,7 @@ Rotas:
 from flask import Flask
 from src.config import ConfigProd, CustomJSONProvider
 from src.models import db
-from src.routes import scraping_bp
+# from src.routes import scraping_bp
 from src.auth import configure_jwt
 from src.routes import auth_bp
 from src.docs import configure_swagger
@@ -30,7 +30,7 @@ db.init_app(app)
 configure_swagger(app)
 configure_jwt(app)
 app.json = CustomJSONProvider(app)
-app.register_blueprint(scraping_bp)
+# app.register_blueprint(scraping_bp)
 app.register_blueprint(auth_bp)
 
 @app.route('/')

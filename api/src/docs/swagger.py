@@ -29,7 +29,7 @@ def configure_swagger(app) -> None:
             None
     """
     swagger_config = {
-        "swagger": "3.0",
+        "swagger": "2.0",
         "info": {
             "title": "Embrapa's API",
             "description": "API para raspagem de dados do site da Embrapa com autenticação via JWT",
