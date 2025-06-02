@@ -499,35 +499,29 @@ def scrap_content() -> Response:
     responses:
       200:
         description: Dados raspados com sucesso
-        content:
-          application/json:
-            example:
-              "[Parâmetros da pesquisa]": "[opção=producao, ano=2000, sub_opção=None (None, se não existir)]"
-                "": ""
-                "['Produto', 'Quantidade (L.)'] ['Total', '372.917.110']":
-                - "VINHO DE MESA: 273.025.576":
-                  - Tinto: "208.242.670"
-                    Branco: "44.902.276"
-                    Rosado: "19.880.630"
-                - "..."
-                # resto do código omitido para brevidade
+        example:
+          "[Parâmetros da pesquisa]": "[opção=producao, ano=2000, sub_opção=None (None, se não existir)]"
+          "": ""
+          "['Produto', 'Quantidade (L.)'] ['Total', '372.917.110']":
+          - "VINHO DE MESA: 273.025.576":
+            - Tinto: "208.242.670"
+              Branco: "44.902.276"
+              Rosado: "19.880.630"
+          - "..."
+        # resto do código omitido para brevidade
       422:
         description: Erro de validação dos parâmetros
-        content:
-          application/json:
-            example:
-              error: Validation failed
-              details: Mensagem de erro personalizada
-              support: /scrape/content/help
-              example: 
-                option: producao
-                year: 2023
+          example:
+            error: Validation failed
+            details: Mensagem de erro personalizada
+            support: /scrape/content/help
+            example: 
+            option: producao
+            year: 2023
       500:
         description: Erro interno no servidor ao tentar realizar a raspagem
-        content:
-          application/json:
-            example:
-              error: Mensagem de erro personalizada
+          example:
+            error: Mensagem de erro personalizada
     """    
     try:
         data = request.args.to_dict()
@@ -672,24 +666,24 @@ def save_table_sql() -> Response:
     responses:
       200:
         description: Dados salvos no servidor
-          example:
-              msg: Tabelas salvas com sucesso
+        example:
+          msg: Tabelas salvas com sucesso
       400:
         description: Opção inválida
         example:
-            error: Mensagem de erro personalizada
+          error: Mensagem de erro personalizada
       401:
         description: Token ausente ou inválido
         example:
-            error: Mensagem de erro personalizada
+          error: Mensagem de erro personalizada
       422:
         description: Erro de formato do token
         example:
-            error: Mensagem de erro personalizada
+          error: Mensagem de erro personalizada
       500:
         description: Erro interno no servidor ao tentar salvar
         example:
-            error: Mensagem de erro personalizada
+          error: Mensagem de erro personalizada
     """
     data = request.args.to_dict()
     opcao = data['opcao']
