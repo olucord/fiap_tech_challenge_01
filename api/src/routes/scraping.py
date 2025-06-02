@@ -673,20 +673,9 @@ def save_table_sql() -> Response:
       200:
         description: Dados salvos no servidor
         content:
-            application/json:
-                schema:
-                type: object
-                properties:
-                    msg:
-                    type: string
-                    user:
-                    type: string
-                    opcao:
-                    type: string
-                    anos_processados:
-                    type: array
-                    items:
-                        type: integer
+          application/json:
+            example:
+              msg: Tabelas salvas com sucesso
       400:
         description: Opção inválida
         content:
