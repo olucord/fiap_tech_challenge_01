@@ -1,23 +1,28 @@
 """
 jwt.py
 
-Configura o JWT (Json Web Token) para o aplicativo Flask por meio da biblioteca 
-flask_jwt_extended.
+Inicializa o JWT (Json Web Token) na aplicação Flask
 
-É REDUNDANTE?
-Funções: 
-- configure_jwt(app): inicializa o JWTManager no arquivo principal da aplicação,
-o app.py
+Functions:
+    configure_jwt(app): inicializa o JWTManager na API.
 
+        Params:
+            app: instância da aplicação Flask.
+
+        Returns:
+            None
 """
 from flask_jwt_extended import JWTManager
 
-def configure_jwt(app):
+def configure_jwt(app) -> None:
     """
     Inicializa o JWTManager com a aplicação Flask.
-    ---
-    Parameters:
-        app: instância da aplicação Flask. 
+    
+    Params:
+        app: instância da aplicação Flask.
+
+    Returns:
+        None
     """
     JWTManager(app)
 

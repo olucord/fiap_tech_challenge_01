@@ -5,6 +5,10 @@ Este módulo define as configurações da aplicação Flask para diferentes ambi
 (desenvolvimento e produção), além de lhe fornecer um provedor JSON 
 personalizado.
 
+Aqui também será carregada a string de conexão do PostgreSQL da variável de 
+ambiente POSTGRES_URL e ajustado o prefixo "postgres://" para compatibilidade 
+com bibliotecas como SQLAlchemy.
+
 Classes:
     ConfigDev: Configurações específicas para ambiente de desenvolvimento.
     ConfigProd: Configurações específicas para ambiente de produção.
@@ -29,28 +33,29 @@ class ConfigDev:
         DEBUG (bool): Ativa o modo de depuração.
         JWT_SECRET_KEY (str): Chave secreta usada para assinatura de tokens JWT.
         JSONIFY_PRETTYPRINT_REGULAR (bool): Ativa a identação na saída JSON.
-        SWAGGER (dict): Configurações para a interface Swagger UI.
-        CACHE_TYPE (str): Tipo de cache utilizado ('simple' usa cache em 
-        memória).
+        SQLALCHEMY_DATABASE_URI (str): String de conexão com o banco de dados
+        PostgreSQL.
     """
     DEBUG = True
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
     JSONIFY_PRETTYPRINT_REGULAR = True
-    SWAGGER = {
-    "title":"Embrapa's API",
-    "uiversion":3
-    }
     SQLALCHEMY_DATABASE_URI = CONNECTION_STRING
-    CACHE_TYPE = 'simple'
 
 class ConfigProd:
     """
     Configurações de produção para a aplicação Flask.
     
     Attrs:
-        DEBUG (bool): Desativa o modo de depuração em produção.
+        DEBUG (bool): Desativa o modo de depuração.
+        JWT_SECRET_KEY (str): Chave secreta usada para assinatura de tokens JWT.
+        JSONIFY_PRETTYPRINT_REGULAR (bool): Ativa a identação na saída JSON.
+        SQLALCHEMY_DATABASE_URI (str): String de conexão com o banco de dados
+        PostgreSQL.
     """
     DEBUG = False
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
+    JSONIFY_PRETTYPRINT_REGULAR = True
+    SQLALCHEMY_DATABASE_URI = CONNECTION_STRING
 
 class CustomJSONProvider(DefaultJSONProvider):
     """

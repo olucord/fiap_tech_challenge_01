@@ -1,24 +1,48 @@
+"""
+auth.py
+
+Módulo responsável pela autenticação das rotas de raspagem via JWT com um banco
+de dados de usuários
+
+Endpoints:
+    POST /register: endpoint para registrar um novo usuário com base nos 
+    parâmetros passados na requisição HTTP (username e password).
+
+        Params:
+            username (str): nome do usuário a ser registrado.
+            password (str): senha do usuário a ser registrado.	
+        
+        Returns:
+            response: objeto JSON contendo a confirmação do usuário criado ou 
+            uma mensagem de erro, se a solicitação falhar.
+
+    POST /login: endpoint para autenticar um usuário, retornando um JWT em caso
+    de uma autenticação bem-sucedida.
+
+        Params:
+            username (str): nome do usuário a ser logado.
+            password (str): senha do usuário a ser logado.	
+            
+        Returns:
+            response: objeto JSON contendo o token gerado para o usuário ou 
+            uma mensagem de erro, se a solicitação falhar.
+            
+    DELETE /account: endpoint para deletar um usuário.
+
+        Returns:
+            response: objeto JSON contendo a confirmação que o usuário foi
+            deletado ou uma mensagem de erro, se a solicitação falhar.
+"""
+
 from flask import Blueprint, jsonify, request
 from src.models import db, User
 from flask_jwt_extended import (
-    create_access_token, jwt_required,
-    get_jwt_identity, decode_token)
+    create_access_token, jwt_required, get_jwt_identity)
 from datetime import timedelta
 
 auth_bp = Blueprint('auth', __name__)
 
-
-####
-# Testar nova funcao pra validar um token
-####
-# def valida_token(token):
-#     tk_decodificado = decode_token(token)
-#     print(tk_decodificado)
-#     return tk_decodificado
-
-
-
-@auth_bp.route('/register', methods=['GET'])  # Ajuste o método e endpoint conforme necessário
+@auth_bp.route('/register', methods=['POST'])
 def register():
     """
     Registra um novo usuário
@@ -34,16 +58,19 @@ def register():
         name: password
         type: string
         required: true
-
     responses:
       201:
         description: Usuário criado com sucesso
+      400:
+        description: Faltando dados requeridos
       409:
         description: Usuário já existe
+      500:
+        description: Erro interno no servidor ao tentar registar um usuário
     """    
     # with app.app_context():  # Garante o contexto da aplicação
     data = request.args.to_dict()
-    # Verifique se os campos necessários existem
+    # Verifica se os campos necessários existem
     if 'username' not in data or 'password' not in data:
         return jsonify({"error": "Missing username or password"}), 400
     
@@ -65,7 +92,6 @@ def register():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-
 @auth_bp.route('/login', methods=['POST'])
 def login():
     """
@@ -82,10 +108,11 @@ def login():
         name: password
         type: string
         required: true
-
     responses:
       200:
         description: Token de acesso fornecido ao usuário
+      400:
+        description: Faltando dados requeridos
       401:
         description: Credenciais inválidas
     """
@@ -97,17 +124,17 @@ def login():
 
     if str(user.username).strip() == str(data['username']).strip():
       if str(user.password).strip()==str(data['password']).strip():
-        token = create_access_token(identity=user.username, expires_delta=timedelta(minutes=30))
+        token = create_access_token(
+            identity=user.username, expires_delta=timedelta(minutes=30)
+            )
         
         return jsonify({"acess token":token}), 200
     else:
       return jsonify({"error":"Invalid credentials"}), 401
         
-
 @auth_bp.route('/account', methods=['DELETE'])
 @jwt_required()
 def delete_account():
-
     """
     Deleta a conta do usuário autenticado
     ---
@@ -121,7 +148,6 @@ def delete_account():
       404:
         description: Usuário não encontrado
     """
-    
     user_id = get_jwt_identity()
 
     user = User.query.get(user_id)
@@ -129,7 +155,8 @@ def delete_account():
     if user:
         db.session.delete(user)
         db.session.commit()
-        return jsonify({"msg":f"User '{user.username}' deleted sucessfully"}), 
-    200
+        return jsonify({
+            "msg":f"User '{user.username}' deleted sucessfully"
+            }), 200
     
     return jsonify({"error":"User not found"}), 404    

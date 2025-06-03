@@ -7,6 +7,10 @@ Este módulo fornece endpoints e funções referentes a raspagem de dados do sit
 da Embrapa (http://vitibrasil.cnpuv.embrapa.br/index.php?opcao=opt_01), 
 contemplando dados da vitivinicultura do estado do Rio Grande do Sul.
 
+Aqui também será carregada a string de conexão do PostgreSQL da variável de 
+ambiente POSTGRES_URL e ajustado o prefixo "postgres://" para compatibilidade 
+com bibliotecas como SQLAlchemy.
+
 Os dados extraídos são estruturados e retornados em formato JSON.
 
 Endpoints:
@@ -18,8 +22,7 @@ Endpoints:
             Query: 
                 option: opção principal da requisição HTTP
                 year: parâmetro de ano para filtrar a requisição
-                sub_option: parâmetro relativo a opção principal
-                
+                sub_option: parâmetro relativo a opção principal      
 
         Returns:
             response: objeto JSON com os dados organizados conforme os 
@@ -31,9 +34,20 @@ Endpoints:
 
         Returns:
             response: objeto JSON contendo as opções válidas de parâmetros que 
-            podem ser utilizados neste endpoint e um exemplo de requisição HTTP 
-            para facilitar o uso da API ou uma mensagem de erro, se a 
-            solicitação falhar.
+            podem ser utilizados e um exemplo de requisição HTTP para facilitar 
+            o uso da API ou uma mensagem de erro, se a solicitação falhar.
+
+    GET /scrape/salvar/<string:opcao>: endpoint para salvar os dados raspados
+    do site da Embrapa em um banco de dados que servirá como "fallback" caso o
+    site venha a cair.
+
+        Params:
+            Path:
+                opcao: opção principal da requisição HTTP
+
+        Returns: 
+            response: objeto JSON contendo informações de salvamento do banco
+            de dados ou uma mensagem de erro, se a solicitação falhar.
 
 Functions:
     build_full_url(parameters_sent): função para construir a url completa a ser
@@ -78,6 +92,20 @@ Functions:
             list: lista com os dados extraidos da tabela principal na 
             página raspada.
 
+    get_table_sql(parametros): função que verifica qual o tipo de opção foi
+    selecionada, envia instruções SQL para o banco de dados e retorna os dados
+    de acordo com os parâmetros selecionados. Chamada apenas em caso de erro
+    na parte do cliente.
+
+        Params:
+            parametros (dict): faz referência ao dicionário "parameters_sent" 
+            que contém os parâmetros passados na requisição HTTP.
+
+        Returns:
+            response: objeto JSON com os dados organizados conforme os 
+            parâmetros passados na requisição HTTP ou uma mensagem de erro, 
+            se a solicitação falhar.
+
     scrape_table_content(parameters_sent): função que realiza a raspagem no site. 
     Integra as outras funções definidas nesse módulo (com exceção as dos
     endpoints).
@@ -90,20 +118,17 @@ Functions:
             response: objeto JSON com os dados organizados conforme os 
             parâmetros passados na requisição HTTP ou uma mensagem de erro, 
             se a solicitação falhar.
-
 """
+
 import os
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from datetime import datetime
 from pydantic import ValidationError
 from sqlalchemy import create_engine
-from tempfile import TemporaryDirectory
 from src.models import QueryParametersModel
 from flask import Blueprint, jsonify, request, Response
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 CONNECTION_STRING = os.environ.get('POSTGRES_URL')
 if CONNECTION_STRING and CONNECTION_STRING.startswith("postgres://"):
@@ -276,7 +301,20 @@ def get_data_table(parameters_sent, table) -> list:
         
         return items_list
 
-def get_table_sql(parametros):
+def get_table_sql(parametros) -> tuple | Response:
+    """
+    Verifica qual a opção selecionada, faz uma consulta SQL e retorna os dados.
+
+    Params:
+        parametros (dict): faz referência ao dicionário "parameters_sent" 
+        que contém os parâmetros passados na requisição HTTP.
+
+    Returns:
+        tuple | Response:
+            Retorna uma tupla de listas com os valores dos dados puxados da 
+            tabela com a consulta SQL ou um objeto JSON com uma mensagem de 
+            erro, se a solicitação falhar.
+    """
     engine = create_engine(CONNECTION_STRING)
     try: 
         # Inicializa variaveis
@@ -375,6 +413,10 @@ def scrape_table_content(parameters_sent) -> Response:
     """
     full_url = build_full_url(parameters_sent) 
 
+    # Para teste da modelagem, dos parâmetros passados na requisição HTTP, com a 
+    # QueryParametersModel
+    # return jsonify({"A url completa é: ":full_url})
+
     try:
 
         try:
@@ -403,7 +445,6 @@ def scrape_table_content(parameters_sent) -> Response:
 
     except Exception as e:
         return jsonify({"error":str(e)})
-
 
 @scraping_bp.route('/scrape/content', methods=['GET'])
 @jwt_required()
@@ -455,7 +496,6 @@ def scrap_content() -> Response:
             --espumantes, \n
             --uvas_frescas, \n
             --suco_de_uva\n
-
     responses:
       200:
         description: Dados raspados e organizados conforme os parâmetros fornecidos.
@@ -552,7 +592,6 @@ def scrap_content_help() -> Response:
     
     except Exception as e:
         return jsonify({"error":str(e)}), 500
-    
 
 # Endpoint de scraping com loop de anos
 @scraping_bp.route('/scrape/salvar/<string:opcao>', methods=['GET'])
@@ -639,7 +678,6 @@ def save_table_sql(opcao):
     anos_processados = []
     errors = []
 
-
     fg = 0
     for ano in range(1970, 2025):
         if ano != 2024:
@@ -654,7 +692,6 @@ def save_table_sql(opcao):
                         'original_year': ano,
                         'original_sub_option': None
                     }
-
 
                     full_url = build_full_url(parameters_sent)
                     response = requests.get(full_url)
@@ -723,12 +760,11 @@ def save_table_sql(opcao):
                     else:
                         df.to_sql(parameters_sent['original_option'], engine, if_exists='append', index=False)
                         anos_processados.append(ano)
-                
+
                 except requests.RequestException as e:
                     errors.append(f'Erro na requisição HTTP: {str(e)}')
                 except Exception as e:
                     errors.append(f'Erro ao processar os dados: {str(e)}')
-
 
         elif opcao in ['processamento']:
             if ano != 2024:
@@ -751,7 +787,6 @@ def save_table_sql(opcao):
                             'original_year': ano,
                             'original_sub_option': sub_opt
                         }
-
 
                         full_url = build_full_url(parameters_sent)
                         response = requests.get(full_url)
@@ -852,7 +887,6 @@ def save_table_sql(opcao):
                         'original_sub_option': sub_opt
                     }
 
-
                     full_url = build_full_url(parameters_sent)
                     response = requests.get(full_url)
                     response.raise_for_status()
@@ -928,5 +962,3 @@ def save_table_sql(opcao):
         'anos_processados': anos_processados,
         'errors': errors if errors else None
     }), 200
-
-    
