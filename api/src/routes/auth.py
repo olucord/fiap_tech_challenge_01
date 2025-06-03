@@ -34,7 +34,7 @@ Endpoints:
             deletado ou uma mensagem de erro, se a solicitação falhar.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
 from src.models import db, User
 from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity)
@@ -43,7 +43,7 @@ from datetime import timedelta
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
-def register():
+def register() -> Response:
     """
     Registra um novo usuário
     ---
@@ -93,7 +93,7 @@ def register():
         return jsonify({"error": str(e)}), 500
 
 @auth_bp.route('/login', methods=['POST'])
-def login():
+def login() -> Response:
     """
     Autentica um usuário e retorna um token JWT
     ---
@@ -134,7 +134,7 @@ def login():
         
 @auth_bp.route('/account', methods=['DELETE'])
 @jwt_required()
-def delete_account():
+def delete_account() -> Response:
     """
     Deleta a conta do usuário autenticado
     ---

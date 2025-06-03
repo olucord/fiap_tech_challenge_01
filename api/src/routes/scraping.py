@@ -596,7 +596,7 @@ def scrap_content_help() -> Response:
 # Endpoint de scraping com loop de anos
 @scraping_bp.route('/scrape/salvar/<string:opcao>', methods=['GET'])
 @jwt_required()
-def save_table_sql(opcao):
+def save_table_sql(opcao) -> Response:
     """
     Endpoint para salvar as tabelas no SQL para os anos de 1970 a 2023
     ---
