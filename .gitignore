@@ -1,21 +1,22 @@
 # cache Python
 **/__pycache__/
-__pycache__/
 *.py[cod]
 *.pyo
-*.pyc
-*.log
 
 # vs code
 .vscode/
 
 # credenciais
-**/.env
+*.env
 .env
 
-# Tests
+# sandbox.py
+# For quick tests and experiments. Not for production.
 sandbox.py
-teste.ipynb
+.vercel
+*.log
+*.pyc
+__pycache__
 
 # Environments 
 .env 
@@ -26,3 +27,4 @@ ENV/
 env.bak/ 
 venv.bak/ 
 .vercel
+teste.ipynb
