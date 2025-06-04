@@ -11,8 +11,6 @@ Classes:
 """
 
 from flask_sqlalchemy import SQLAlchemy
-import sqlalchemy
-import os
 
 db = SQLAlchemy()
 
